@@ -26,9 +26,9 @@ class PostService(
     fun getPostById(id: Long): PostResponseWithCommentDto {
 
         val post = postRepository.findByIdOrNull(id) ?: throw IllegalArgumentException("Post not found")
-        val commentList = commentRepository.findAllByPostId(id).map { it.toCommentResponseDto() }
+        val comments = commentRepository.findAllByPostId(id).map { it.toCommentResponseDto() }
 
-        return post.toPostWithCommentDtoResponse(post.toPostResponseDto(), commentList)
+        return post.toPostWithCommentDtoResponse(comments)
     }
 
     @Transactional
