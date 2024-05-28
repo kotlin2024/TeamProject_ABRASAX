@@ -2,6 +2,7 @@ package com.teamsparta.abrasax.domain.post.controller
 
 import com.teamsparta.abrasax.domain.post.dto.CreatePostRequestDto
 import com.teamsparta.abrasax.domain.post.dto.PostResponseDto
+import com.teamsparta.abrasax.domain.post.dto.PostResponseWithCommentDto
 import com.teamsparta.abrasax.domain.post.dto.UpdatePostRequestDto
 import com.teamsparta.abrasax.domain.post.service.PostService
 import org.springframework.http.HttpStatus
@@ -17,7 +18,7 @@ class PostController(private val postService: PostService) {
     }
 
     @GetMapping("/{postId}")
-    fun getPostById(@PathVariable("postId") id: Long): ResponseEntity<PostResponseDto> {
+    fun getPostById(@PathVariable("postId") id: Long): ResponseEntity<PostResponseWithCommentDto> {
         return ResponseEntity.status(HttpStatus.OK).body(postService.getPostById(id))
     }
 
