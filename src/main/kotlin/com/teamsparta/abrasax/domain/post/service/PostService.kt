@@ -62,7 +62,7 @@ class PostService(
     @Transactional
     fun deletePost(id: Long) {
         val post = postRepository.findByIdOrNull(id) ?: throw IllegalArgumentException("Post not found")
-
+        commentRepository.deleteAll(commentRepository.findAllByPostId(id))
         postRepository.delete(post)
     }
 }
