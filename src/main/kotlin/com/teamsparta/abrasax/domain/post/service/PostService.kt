@@ -1,5 +1,7 @@
 package com.teamsparta.abrasax.domain.post.service
 
+import com.teamsparta.abrasax.domain.helper.ListStringifyHelper
+import com.teamsparta.abrasax.domain.member.repository.MemberRepository
 import com.teamsparta.abrasax.domain.post.comment.model.toCommentResponseDto
 import com.teamsparta.abrasax.domain.post.comment.repository.CommentRepository
 import com.teamsparta.abrasax.domain.post.dto.CreatePostRequestDto
@@ -17,7 +19,8 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class PostService(
     private val postRepository: PostRepository,
-    private val commentRepository: CommentRepository
+    private val commentRepository: CommentRepository,
+    private val memberRepository: MemberRepository,
 ) {
     fun getPosts(): List<PostResponseDto> {
         return postRepository.findAll().map { it.toPostResponseDto() }
@@ -34,8 +37,15 @@ class PostService(
     @Transactional
     fun createPost(request: CreatePostRequestDto): PostResponseDto {
         val (title, content, tags, authorId) = request
+        val author = memberRepository.findByIdOrNull(authorId)
+            ?: throw IllegalArgumentException("Member id: ($authorId) is not found")
         val post =
-            Post(title = title, content = content, stringifiedTags = Post.stringifyTags(tags), authorId = authorId)
+            Post(
+                title = title,
+                content = content,
+                stringifiedTags = ListStringifyHelper.stringifyList(tags),
+                author = author
+            )
 
         return postRepository.save(post).toPostResponseDto()
     }
@@ -52,7 +62,7 @@ class PostService(
     @Transactional
     fun deletePost(id: Long) {
         val post = postRepository.findByIdOrNull(id) ?: throw IllegalArgumentException("Post not found")
-
+        commentRepository.deleteAll(commentRepository.findAllByPostId(id))
         postRepository.delete(post)
     }
 }
