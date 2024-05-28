@@ -18,7 +18,6 @@ class Comment(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", nullable = false)
-    @Column(name = "post_id")
     val post: Post,
 ) {
     @Id
