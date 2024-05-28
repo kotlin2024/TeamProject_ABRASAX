@@ -1,5 +1,7 @@
 package com.teamsparta.abrasax.domain.post.model
 
+import com.teamsparta.abrasax.domain.helper.ListStringifyHelper
+import com.teamsparta.abrasax.domain.member.model.Member
 import com.teamsparta.abrasax.domain.post.comment.dto.CommentResponseDto
 import com.teamsparta.abrasax.domain.post.dto.PostResponseDto
 import com.teamsparta.abrasax.domain.post.dto.PostResponseWithCommentDto
@@ -14,10 +16,9 @@ class Post(
     @Column(name = "content", nullable = false)
     var content: String,
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "author_id", nullable = false)
-    @Column(name = "author_id")
-    val authorId: Long, //Todo: Member model로 바꾸기
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id", nullable = false)
+    val author: Member,
 
     @Column(name = "tags", nullable = false)
     var stringifiedTags: String,
@@ -29,18 +30,9 @@ class Post(
     fun update(newTitle: String, newContent: String, newTags: List<String>) {
         title = newTitle
         content = newContent
-        stringifiedTags = stringifyTags(newTags)
+        stringifiedTags = ListStringifyHelper.stringifyList(newTags)
     }
 
-    companion object {
-        fun stringifyTags(tags: List<String>): String {
-            return tags.joinToString(",") { it }
-        }
-
-        fun parseToTags(stringifiedTags: String): List<String> {
-            return if (stringifiedTags == "") listOf() else stringifiedTags.split(",")
-        }
-    }
 }
 
 fun Post.toPostResponseDto(): PostResponseDto {
@@ -48,8 +40,8 @@ fun Post.toPostResponseDto(): PostResponseDto {
         id = id!!,
         title = title,
         content = content,
-        tags = Post.parseToTags(stringifiedTags),
-        authorId = authorId
+        tags = ListStringifyHelper.parseToList(stringifiedTags),
+        authorId = author.id!!
     )
 }
 
@@ -62,8 +54,8 @@ fun Post.toPostWithCommentDtoResponse(
         id = id!!,
         title = title,
         content = content,
-        authorId = authorId,
-        tags = Post.parseToTags(stringifiedTags),
+        authorId = author.id!!,
+        tags = ListStringifyHelper.parseToList(stringifiedTags),
         comments = commentResponseDto
 
     )
