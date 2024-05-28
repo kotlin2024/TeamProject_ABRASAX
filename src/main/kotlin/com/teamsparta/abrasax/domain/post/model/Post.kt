@@ -15,7 +15,7 @@ class Post(
 //    @ManyToOne(fetch = FetchType.LAZY)
 //    @JoinColumn(name = "author_id", nullable = false)
     @Column(name = "author_id")
-    val authorId: Long,
+    val authorId: Long, //Todo: Member model로 바꾸기
 
     @Column(name = "tags", nullable = false)
     var stringifiedTags: String,
