@@ -1,0 +1,48 @@
+package com.teamsparta.abrasax.domain.post.service
+
+import com.teamsparta.abrasax.domain.post.dto.CreatePostRequestDto
+import com.teamsparta.abrasax.domain.post.dto.PostResponseDto
+import com.teamsparta.abrasax.domain.post.dto.UpdatePostRequestDto
+import com.teamsparta.abrasax.domain.post.model.Post
+import com.teamsparta.abrasax.domain.post.model.toPostResponseDto
+import com.teamsparta.abrasax.domain.post.repository.PostRepository
+import org.springframework.data.repository.findByIdOrNull
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+
+@Service
+class PostService(private val postRepository: PostRepository) {
+    fun getPosts(): List<PostResponseDto> {
+        return postRepository.findAll().map { it.toPostResponseDto() }
+    }
+
+    fun getPostById(id: Long): PostResponseDto {
+        val post = postRepository.findByIdOrNull(id) ?: throw IllegalArgumentException("Post not found")
+        return post.toPostResponseDto()
+    }
+
+    @Transactional
+    fun createPost(request: CreatePostRequestDto): PostResponseDto {
+        val (title, content, tags, authorId) = request
+        val post =
+            Post(title = title, content = content, stringifiedTags = Post.stringifyTags(tags), authorId = authorId)
+
+        return postRepository.save(post).toPostResponseDto()
+    }
+
+    @Transactional
+    fun updatePost(id: Long, request: UpdatePostRequestDto): PostResponseDto {
+        val (title, content, tags) = request
+        val post = postRepository.findByIdOrNull(id) ?: throw IllegalArgumentException("Post not found")
+
+        post.update(title, content, tags)
+        return post.toPostResponseDto()
+    }
+
+    @Transactional
+    fun deletePost(id: Long) {
+        val post = postRepository.findByIdOrNull(id) ?: throw IllegalArgumentException("Post not found")
+
+        postRepository.delete(post)
+    }
+}
