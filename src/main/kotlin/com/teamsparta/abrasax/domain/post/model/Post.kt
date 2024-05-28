@@ -1,6 +1,8 @@
 package com.teamsparta.abrasax.domain.post.model
 
+import com.teamsparta.abrasax.domain.post.comment.dto.CommentResponseDto
 import com.teamsparta.abrasax.domain.post.dto.PostResponseDto
+import com.teamsparta.abrasax.domain.post.dto.PostResponseWithCommentDto
 import jakarta.persistence.*
 
 @Entity
@@ -48,5 +50,21 @@ fun Post.toPostResponseDto(): PostResponseDto {
         content = content,
         tags = Post.parseToTags(stringifiedTags),
         authorId = authorId
+    )
+}
+
+fun Post.toPostWithCommentDtoResponse(
+    commentResponseDto: List<CommentResponseDto>
+): PostResponseWithCommentDto {
+
+    return PostResponseWithCommentDto(
+
+        id = id!!,
+        title = title,
+        content = content,
+        authorId = authorId,
+        tags = Post.parseToTags(stringifiedTags),
+        comments = commentResponseDto
+
     )
 }

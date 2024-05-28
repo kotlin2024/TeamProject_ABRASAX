@@ -8,24 +8,8 @@ data class PostResponseWithCommentDto(
     var title: String,
     var content: String,
     val authorId: Long,
-    var tags: String,
+    var tags: List<String>,
     var comments: List<CommentResponseDto>
 
 )
 
-fun toPostWithCommentDtoResponse(
-    postResponseDto: PostResponseDto,
-    commentResponseDto: List<CommentResponseDto>
-): PostResponseWithCommentDto {
-
-    return PostResponseWithCommentDto(
-
-        id = postResponseDto.id!!,
-        title = postResponseDto.title,
-        content = postResponseDto.content,
-        authorId = postResponseDto.authorId,
-        tags = postResponseDto.tags.joinToString(",") { it },
-        comments = commentResponseDto
-
-    )
-}
