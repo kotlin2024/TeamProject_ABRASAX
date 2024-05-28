@@ -1,24 +1,34 @@
 package com.teamsparta.abrasax.domain.post.service
 
+import com.teamsparta.abrasax.domain.post.comment.model.toCommentResponseDto
+import com.teamsparta.abrasax.domain.post.comment.repository.CommentRepository
 import com.teamsparta.abrasax.domain.post.dto.CreatePostRequestDto
 import com.teamsparta.abrasax.domain.post.dto.PostResponseDto
+import com.teamsparta.abrasax.domain.post.dto.PostResponseWithCommentDto
 import com.teamsparta.abrasax.domain.post.dto.UpdatePostRequestDto
 import com.teamsparta.abrasax.domain.post.model.Post
 import com.teamsparta.abrasax.domain.post.model.toPostResponseDto
+import com.teamsparta.abrasax.domain.post.model.toPostWithCommentDtoResponse
 import com.teamsparta.abrasax.domain.post.repository.PostRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-class PostService(private val postRepository: PostRepository) {
+class PostService(
+    private val postRepository: PostRepository,
+    private val commentRepository: CommentRepository
+) {
     fun getPosts(): List<PostResponseDto> {
         return postRepository.findAll().map { it.toPostResponseDto() }
     }
 
-    fun getPostById(id: Long): PostResponseDto {
+    fun getPostById(id: Long): PostResponseWithCommentDto {
+
         val post = postRepository.findByIdOrNull(id) ?: throw IllegalArgumentException("Post not found")
-        return post.toPostResponseDto()
+        val comments = commentRepository.findAllByPostId(id).map { it.toCommentResponseDto() }
+
+        return post.toPostWithCommentDtoResponse(comments)
     }
 
     @Transactional

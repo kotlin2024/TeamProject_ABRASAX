@@ -2,6 +2,7 @@ package com.teamsparta.abrasax.domain.post.comment.controller
 
 import com.teamsparta.abrasax.domain.post.comment.dto.AddCommentRequestDto
 import com.teamsparta.abrasax.domain.post.comment.dto.CommentResponseDto
+import com.teamsparta.abrasax.domain.post.comment.dto.UpdateCommentRequestDto
 import com.teamsparta.abrasax.domain.post.comment.service.CommentService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -24,18 +25,29 @@ class CommentController(
             .body(commentService.addComment(postId, requestDto))
     }
 
-//    @PutMapping("/{commentId}")
-//    fun updateComment(
-//        @PathVariable("commentId"), id: Long,
-//        @RequestBody updateCommentRequestDto: UpdateCommentRequestDto
-//    ): ResponseEntity<CommentResponseDto>{
-//        return ResponseEntity.status(HttpStatus.OK).body(CommentService.updateComment(id, updateCommentRequestDto))
-//    }
+    @PutMapping("/{commentId}")
+    fun updateComment(
+        @PathVariable postId: Long,
+        @PathVariable commentId: Long,
+        @RequestBody updateCommentRequestDto: UpdateCommentRequestDto
+    ): ResponseEntity<CommentResponseDto> {
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(commentService.updateComment(postId, commentId, updateCommentRequestDto))
+    }
 
-    @DeleteMapping
+    @DeleteMapping("/{commentId}")
     fun deleteComment(
         @PathVariable commentId: Long
     ): ResponseEntity<Unit> {
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
+        return ResponseEntity
+            .status(HttpStatus.NO_CONTENT)
+            .body(commentService.deleteComment(commentId))
+    }
+
+    @GetMapping
+    fun getCommentList(@PathVariable postId: Long): ResponseEntity<List<CommentResponseDto>> {
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(commentService.getCommentList(postId))
     }
 }
