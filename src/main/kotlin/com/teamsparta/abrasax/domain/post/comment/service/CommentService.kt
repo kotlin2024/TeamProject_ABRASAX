@@ -1,5 +1,6 @@
 package com.teamsparta.abrasax.domain.post.comment.service
 
+import com.teamsparta.abrasax.domain.exception.ModelNotFoundException
 import com.teamsparta.abrasax.domain.post.comment.dto.AddCommentRequestDto
 import com.teamsparta.abrasax.domain.post.comment.dto.CommentResponseDto
 import com.teamsparta.abrasax.domain.post.comment.dto.UpdateCommentRequestDto
@@ -18,7 +19,7 @@ class CommentService(
 ) {
     @Transactional
     fun addComment(postId: Long, request: AddCommentRequestDto): CommentResponseDto {
-        val post = postRepository.findByIdOrNull(postId) ?: throw IllegalArgumentException("Post")
+        val post = postRepository.findByIdOrNull(postId) ?: throw ModelNotFoundException("Post", postId)
 
         val comment = Comment(
             content = request.content,
@@ -31,8 +32,8 @@ class CommentService(
     @Transactional
     fun updateComment(postId: Long, commentId: Long, requestDto: UpdateCommentRequestDto): CommentResponseDto {
 
-        val post = postRepository.findByIdOrNull(postId) ?: throw IllegalArgumentException("Post")
-        val comment = commentRepository.findByIdOrNull(commentId) ?: throw IllegalArgumentException("Comment")
+        val post = postRepository.findByIdOrNull(postId) ?: throw ModelNotFoundException("Post", postId)
+        val comment = commentRepository.findByIdOrNull(commentId) ?: throw ModelNotFoundException("Comment", commentId)
 
         comment.update(requestDto.content)
         return comment.toCommentResponseDto()
@@ -40,7 +41,7 @@ class CommentService(
 
     @Transactional
     fun deleteComment(commentId: Long) {
-        val comment = commentRepository.findByIdOrNull(commentId) ?: throw IllegalArgumentException("Comment")
+        val comment = commentRepository.findByIdOrNull(commentId) ?: throw ModelNotFoundException("Comment", commentId)
         commentRepository.delete(comment)
     }
 
