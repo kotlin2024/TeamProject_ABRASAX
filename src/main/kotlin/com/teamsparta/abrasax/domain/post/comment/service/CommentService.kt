@@ -1,5 +1,8 @@
 package com.teamsparta.abrasax.domain.post.comment.service
 
+
+import com.teamsparta.abrasax.domain.exception.MemberNotFoundException
+import com.teamsparta.abrasax.domain.exception.ModelNotFoundException
 import com.teamsparta.abrasax.domain.member.repository.MemberRepository
 import com.teamsparta.abrasax.domain.post.comment.dto.AddCommentRequestDto
 import com.teamsparta.abrasax.domain.post.comment.dto.CommentResponseDto
@@ -20,9 +23,10 @@ class CommentService(
 ) {
     @Transactional
     fun addComment(postId: Long, request: AddCommentRequestDto): CommentResponseDto {
-        val post = postRepository.findByIdOrNull(postId) ?: throw IllegalArgumentException("Post")
+        val post = postRepository.findByIdOrNull(postId) ?: throw ModelNotFoundException("Post", postId)
         val (content, authorId) = request
-        val member = memberRepository.findByIdOrNull(authorId) ?: throw IllegalArgumentException("Member")
+        val member = memberRepository.findByIdOrNull(authorId) ?: throw MemberNotFoundException(authorId)
+
         val comment = Comment(
             content = content,
             member = member,
@@ -33,7 +37,8 @@ class CommentService(
 
     @Transactional
     fun updateComment(postId: Long, commentId: Long, requestDto: UpdateCommentRequestDto): CommentResponseDto {
-        if (postRepository.existsById(postId) == false) throw IllegalArgumentException("Post")
+
+        if (postRepository.existsById(postId) == false) throw ModelNotFoundException("Post", postId)
         val comment = commentRepository.findByIdOrNull(commentId) ?: throw IllegalArgumentException("Comment")
 
         comment.update(requestDto.content)
@@ -42,7 +47,7 @@ class CommentService(
 
     @Transactional
     fun deleteComment(commentId: Long) {
-        val comment = commentRepository.findByIdOrNull(commentId) ?: throw IllegalArgumentException("Comment")
+        val comment = commentRepository.findByIdOrNull(commentId) ?: throw ModelNotFoundException("Comment", commentId)
         commentRepository.delete(comment)
     }
 

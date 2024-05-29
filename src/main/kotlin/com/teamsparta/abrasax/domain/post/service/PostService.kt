@@ -1,5 +1,7 @@
 package com.teamsparta.abrasax.domain.post.service
 
+import com.teamsparta.abrasax.domain.exception.MemberNotFoundException
+import com.teamsparta.abrasax.domain.exception.ModelNotFoundException
 import com.teamsparta.abrasax.domain.helper.ListStringifyHelper
 import com.teamsparta.abrasax.domain.member.repository.MemberRepository
 import com.teamsparta.abrasax.domain.post.comment.model.toCommentResponseDto
@@ -28,7 +30,7 @@ class PostService(
 
     fun getPostById(id: Long): PostResponseWithCommentDto {
 
-        val post = postRepository.findByIdOrNull(id) ?: throw IllegalArgumentException("Post not found")
+        val post = postRepository.findByIdOrNull(id) ?: throw ModelNotFoundException("Post", id)
         val comments = commentRepository.findAllByPostId(id).map { it.toCommentResponseDto() }
 
         return post.toPostWithCommentDtoResponse(comments)
@@ -38,7 +40,7 @@ class PostService(
     fun createPost(request: CreatePostRequestDto): PostResponseDto {
         val (title, content, tags, authorId) = request
         val author = memberRepository.findByIdOrNull(authorId)
-            ?: throw IllegalArgumentException("Member id: ($authorId) is not found")
+            ?: throw MemberNotFoundException(authorId)
         val post =
             Post(
                 title = title,
@@ -53,7 +55,7 @@ class PostService(
     @Transactional
     fun updatePost(id: Long, request: UpdatePostRequestDto): PostResponseDto {
         val (title, content, tags) = request
-        val post = postRepository.findByIdOrNull(id) ?: throw IllegalArgumentException("Post not found")
+        val post = postRepository.findByIdOrNull(id) ?: throw ModelNotFoundException("Post", id)
 
         post.update(title, content, tags)
         return post.toPostResponseDto()
@@ -61,7 +63,7 @@ class PostService(
 
     @Transactional
     fun deletePost(id: Long) {
-        val post = postRepository.findByIdOrNull(id) ?: throw IllegalArgumentException("Post not found")
+        val post = postRepository.findByIdOrNull(id) ?: throw ModelNotFoundException("Post", id)
         commentRepository.deleteAll(commentRepository.findAllByPostId(id))
         postRepository.delete(post)
     }
