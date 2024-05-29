@@ -39,14 +39,14 @@ class PostService(
     @Transactional
     fun createPost(request: CreatePostRequestDto): PostResponseDto {
         val (title, content, tags, authorId) = request
-        val author = memberRepository.findByIdOrNull(authorId)
+        val member = memberRepository.findByIdOrNull(authorId)
             ?: throw MemberNotFoundException(authorId)
         val post =
             Post(
                 title = title,
                 content = content,
                 stringifiedTags = ListStringifyHelper.stringifyList(tags),
-                author = author
+                member = member
             )
 
         return postRepository.save(post).toPostResponseDto()
