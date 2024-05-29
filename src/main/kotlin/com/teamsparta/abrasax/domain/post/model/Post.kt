@@ -17,7 +17,7 @@ class Post(
     var content: String,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "author_id", nullable = false)
+    @JoinColumn(name = "member_id", nullable = false)
     val member: Member,
 
     @Column(name = "tags", nullable = false)

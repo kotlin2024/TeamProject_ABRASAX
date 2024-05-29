@@ -1,5 +1,6 @@
 package com.teamsparta.abrasax.domain.post.comment.service
 
+
 import com.teamsparta.abrasax.domain.exception.MemberNotFoundException
 import com.teamsparta.abrasax.domain.exception.ModelNotFoundException
 import com.teamsparta.abrasax.domain.member.repository.MemberRepository
@@ -36,6 +37,7 @@ class CommentService(
 
     @Transactional
     fun updateComment(postId: Long, commentId: Long, requestDto: UpdateCommentRequestDto): CommentResponseDto {
+
         if (postRepository.existsById(postId) == false) throw ModelNotFoundException("Post", postId)
         val comment = commentRepository.findByIdOrNull(commentId) ?: throw IllegalArgumentException("Comment")
 
