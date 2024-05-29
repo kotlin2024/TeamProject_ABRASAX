@@ -17,8 +17,8 @@ class Post(
     var content: String,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "author_id", nullable = false)
-    val author: Member,
+    @JoinColumn(name = "member_id", nullable = false)
+    val member: Member,
 
     @Column(name = "tags", nullable = false)
     var stringifiedTags: String,
@@ -41,7 +41,7 @@ fun Post.toPostResponseDto(): PostResponseDto {
         title = title,
         content = content,
         tags = ListStringifyHelper.parseToList(stringifiedTags),
-        authorId = author.id!!
+        authorId = member.id!!
     )
 }
 
@@ -54,7 +54,7 @@ fun Post.toPostWithCommentDtoResponse(
         id = id!!,
         title = title,
         content = content,
-        authorId = author.id!!,
+        authorId = member.id!!,
         tags = ListStringifyHelper.parseToList(stringifiedTags),
         comments = commentResponseDto
 
