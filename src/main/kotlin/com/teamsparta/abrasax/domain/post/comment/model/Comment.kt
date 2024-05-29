@@ -1,5 +1,6 @@
 package com.teamsparta.abrasax.domain.post.comment.model
 
+import com.teamsparta.abrasax.domain.member.model.Member
 import com.teamsparta.abrasax.domain.post.comment.dto.CommentResponseDto
 import com.teamsparta.abrasax.domain.post.model.Post
 import jakarta.persistence.*
@@ -10,11 +11,9 @@ class Comment(
     @Column(name = "content", nullable = false)
     var content: String,
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "author_id", nullable = false
-    @Column(name = "author_id")
-    val authorId: Long,
-//    Todo: val authorId: Member,
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", nullable = false)
+    val member: Member,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", nullable = false)
@@ -33,6 +32,6 @@ fun Comment.toCommentResponseDto(): CommentResponseDto {
     return CommentResponseDto(
         id = id!!,
         content = content,
-        authorId = authorId,
+        authorId = member.id!!,
     )
 }
