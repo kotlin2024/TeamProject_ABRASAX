@@ -1,5 +1,6 @@
 package com.teamsparta.abrasax.domain.exception.dto
 
+import com.teamsparta.abrasax.domain.exception.DeleteNotAllowedException
 import com.teamsparta.abrasax.domain.exception.ModelNotFoundException
 import com.teamsparta.abrasax.domain.exception.PasswordNotMatchException
 import org.springframework.http.HttpStatus
@@ -19,6 +20,11 @@ class GlobalExceptionHandler {
     @ExceptionHandler(PasswordNotMatchException::class)
     fun handlePasswordNotMatchException(ex: PasswordNotMatchException): ResponseEntity<ErrorResponse> {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponse(message = ex.message))
+    }
+
+    @ExceptionHandler(DeleteNotAllowedException::class)
+    fun handleDeleteNotAllowedException(ex: DeleteNotAllowedException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ErrorResponse(message = ex.message))
     }
 
 //    @ExceptionHandler(MemberNotFoundException::class)
