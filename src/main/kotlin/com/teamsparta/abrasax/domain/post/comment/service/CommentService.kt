@@ -21,9 +21,10 @@ class CommentService(
     @Transactional
     fun addComment(postId: Long, request: AddCommentRequestDto): CommentResponseDto {
         val post = postRepository.findByIdOrNull(postId) ?: throw IllegalArgumentException("Post")
-        val member = memberRepository.findByIdOrNull(post.member.id) ?: throw IllegalArgumentException("Member")
+        val (content, authorId) = request
+        val member = memberRepository.findByIdOrNull(authorId) ?: throw IllegalArgumentException("Member")
         val comment = Comment(
-            content = request.content,
+            content = content,
             member = member,
             post = post
         )
