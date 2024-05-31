@@ -11,9 +11,12 @@ import com.teamsparta.abrasax.domain.post.dto.PostResponseDto
 import com.teamsparta.abrasax.domain.post.dto.PostResponseWithCommentDto
 import com.teamsparta.abrasax.domain.post.dto.UpdatePostRequestDto
 import com.teamsparta.abrasax.domain.post.model.Post
+import com.teamsparta.abrasax.domain.post.model.SortDirection
 import com.teamsparta.abrasax.domain.post.model.toPostResponseDto
 import com.teamsparta.abrasax.domain.post.model.toPostWithCommentDtoResponse
 import com.teamsparta.abrasax.domain.post.repository.PostRepository
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -25,8 +28,48 @@ class PostService(
     private val commentRepository: CommentRepository,
     private val memberRepository: MemberRepository,
 ) {
-    fun getPosts(): List<PostResponseDto> {
-        return postRepository.findAll().map { it.toPostResponseDto() }
+
+    fun getPosts(
+        cursorCreatedAt: LocalDateTime?,
+        pageNumber: Int,
+        pageSize: Int,
+        sortDirection: SortDirection
+    ): List<PostResponseDto> {
+        val (pageable, cursor) = createPageableAndCursor(cursorCreatedAt, pageNumber, pageSize, sortDirection)
+
+
+        val posts = if (sortDirection == SortDirection.DESC) {
+            postRepository.findByCreatedAtBeforeAndDeletedAtIsNull(cursor, pageable)
+        } else {
+            postRepository.findByCreatedAtAfterAndDeletedAtIsNull(cursor, pageable)
+        }
+        return posts.map { it.toPostResponseDto() }
+    }
+
+    fun getPostsByTag(
+        tag: String,
+        cursorCreatedAt: LocalDateTime?,
+        pageNumber: Int,
+        pageSize: Int,
+        sortDirection: SortDirection
+    ): List<PostResponseDto> {
+        val (pageable, cursor) = createPageableAndCursor(cursorCreatedAt, pageNumber, pageSize, sortDirection)
+
+
+        val posts = if (sortDirection == SortDirection.DESC) {
+            postRepository.findByStringifiedTagsContainingAndCreatedAtBeforeAndDeletedAtIsNull(
+                tag,
+                cursor,
+                pageable
+            )
+        } else {
+            postRepository.findByStringifiedTagsContainingAndCreatedAtAfterAndDeletedAtIsNull(
+                tag,
+                cursor,
+                pageable
+            )
+        }
+        return posts.map { it.toPostResponseDto() }
     }
 
     fun getPostById(id: Long): PostResponseWithCommentDto {
@@ -71,5 +114,21 @@ class PostService(
 
         post.delete()
         postRepository.save(post)
+    }
+
+    private fun createPageableAndCursor(
+        cursorCreatedAt: LocalDateTime?,
+        pageNumber: Int,
+        pageSize: Int,
+        sortDirection: SortDirection
+    ): Pair<PageRequest, LocalDateTime> {
+        val sort = Sort.by(sortDirection.toSpringSortDirection(), "createdAt")
+        val pageable = PageRequest.of(pageNumber, pageSize, sort)
+        val cursor = cursorCreatedAt ?: if (sortDirection == SortDirection.ASC) {
+            postRepository.findOldestCreatedAt()?.minusSeconds(1) ?: LocalDateTime.MIN
+        } else {
+            LocalDateTime.now()
+        }
+        return pageable to cursor
     }
 }
