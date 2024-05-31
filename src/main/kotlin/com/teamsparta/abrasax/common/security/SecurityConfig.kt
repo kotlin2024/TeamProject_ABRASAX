@@ -26,7 +26,8 @@ class SecurityConfig(
         "/swagger-ui/**",
         "/v3/**",
         "/auth/**",
-   )
+        "/oauth2/**",
+    )
 
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {

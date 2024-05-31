@@ -29,6 +29,9 @@ class Member(
 
     @Column(name = "deleted_at")
     var deletedAt: LocalDateTime?,
+
+    @Column(name = "social_provider")
+    val socialProvider: String?,
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -73,7 +76,7 @@ class Member(
         }
 
 
-        fun of(email: String, nickname: String, password: String): Member {
+        fun of(email: String, nickname: String, password: String, socialProvider: String?): Member {
             validateNickname(nickname)
             validateEmail(email)
 
@@ -86,6 +89,7 @@ class Member(
                 createdAt = timestamp,
                 updatedAt = timestamp,
                 deletedAt = null,
+                socialProvider = socialProvider
             )
         }
     }
