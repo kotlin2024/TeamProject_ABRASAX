@@ -1,4 +1,4 @@
-package com.teamsparta.abrasax.domain.member.dto
+package com.teamsparta.abrasax.domain.member.authentication.dto
 
 data class SignUpRequest(
     val email: String,

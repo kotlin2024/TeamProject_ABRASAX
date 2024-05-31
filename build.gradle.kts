@@ -28,6 +28,10 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     runtimeOnly("org.postgresql:postgresql")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+    implementation("org.springframework.boot:spring-boot-starter-security") // JWT 의존성 추가
+    implementation("io.jsonwebtoken:jjwt:0.9.1") // JWT 의존성 추가
+    implementation  ("javax.xml.bind:jaxb-api:2.3.1")
 }
 
 tasks.withType<KotlinCompile> {
