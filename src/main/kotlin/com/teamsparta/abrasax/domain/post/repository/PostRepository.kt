@@ -11,13 +11,13 @@ import java.util.*
 @Repository
 interface PostRepository : JpaRepository<Post, Long> {
     fun findPostByIdAndDeletedAtIsNull(id: Long): Optional<Post>
-    fun findByStringifiedTagsContainingAndCreatedAtBeforeAndDeletedAtIsNull(
+    fun findByStringifiedTagsContainingIgnoreCaseAndCreatedAtBeforeAndDeletedAtIsNull(
         tag: String,
         cursorCreatedAt: LocalDateTime,
         pageable: Pageable
     ): List<Post>
 
-    fun findByStringifiedTagsContainingAndCreatedAtAfterAndDeletedAtIsNull(
+    fun findByStringifiedTagsContainingIgnoreCaseAndCreatedAtAfterAndDeletedAtIsNull(
         tag: String,
         cursorCreatedAt: LocalDateTime,
         pageable: Pageable

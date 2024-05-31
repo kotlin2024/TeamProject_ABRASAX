@@ -1,9 +1,6 @@
 package com.teamsparta.abrasax.domain.exception.dto
 
-import com.teamsparta.abrasax.domain.exception.DeleteNotAllowedException
-import com.teamsparta.abrasax.domain.exception.ModelInvariantException
-import com.teamsparta.abrasax.domain.exception.ModelNotFoundException
-import com.teamsparta.abrasax.domain.exception.PasswordNotMatchException
+import com.teamsparta.abrasax.domain.exception.*
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.AuthenticationException
@@ -29,13 +26,33 @@ class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ErrorResponse(message = ex.message))
     }
 
-    @ExceptionHandler(ModelInvariantException::class)
-    fun handleModelInvariantException(ex: ModelInvariantException): ResponseEntity<String> {
+    @ExceptionHandler(DomainInvariantException::class)
+    fun handleModelInvariantException(ex: DomainInvariantException): ResponseEntity<String> {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.message)
     }
 
     @ExceptionHandler(AuthenticationException::class)
-    fun handlerAuthenticationException(ex: AuthenticationException): ResponseEntity<ErrorResponse> {
+    fun handleAuthenticationException(ex: AuthenticationException): ResponseEntity<ErrorResponse> {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorResponse(message = ex.message))
+    }
+
+    @ExceptionHandler(SocialLoginPasswordChangeException::class)
+    fun handleSocialLoginPasswordChangeException(ex: SocialLoginPasswordChangeException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ErrorResponse(message = ex.message))
+    }
+
+    @ExceptionHandler(EmailDuplicateException::class)
+    fun handleEmailDuplicateException(ex: EmailDuplicateException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponse(message = ex.message))
+    }
+
+    @ExceptionHandler(CommentMismatchException::class)
+    fun handleCommentMismatchException(ex: CommentMismatchException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponse(message = ex.message))
+    }
+
+    @ExceptionHandler(UnauthorizedAccessException::class)
+    fun handleUnauthorizedAccessException(ex: UnauthorizedAccessException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ErrorResponse(message = ex.message))
     }
 }

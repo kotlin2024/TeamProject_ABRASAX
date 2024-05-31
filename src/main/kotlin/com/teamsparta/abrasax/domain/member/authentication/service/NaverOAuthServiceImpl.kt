@@ -2,12 +2,12 @@ package com.teamsparta.abrasax.domain.member.authentication.service
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.teamsparta.abrasax.common.dto.IdResponseDto
 import com.teamsparta.abrasax.common.security.JwtTokenProvider
 import com.teamsparta.abrasax.common.security.NaverOauthProperties
 import com.teamsparta.abrasax.domain.member.authentication.dto.*
-import com.teamsparta.abrasax.domain.member.dto.MemberResponse
 import com.teamsparta.abrasax.domain.member.model.Member
-import com.teamsparta.abrasax.domain.member.model.toResponse
+import com.teamsparta.abrasax.domain.member.model.toIdResponseDto
 import com.teamsparta.abrasax.domain.member.repository.MemberRepository
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -37,7 +37,7 @@ class NaverOAuthServiceImpl(
         return LoginResponse(token = jwtTokenProvider.generateToken(email))
     }
 
-    override fun signUp(request: OAuthSignUpRequest): MemberResponse {
+    override fun signUp(request: OAuthSignUpRequest): IdResponseDto {
         val (email, password, nickname, socialProvider) = request
         val member = Member.of(
             email = email,
@@ -45,7 +45,7 @@ class NaverOAuthServiceImpl(
             nickname = nickname,
             socialProvider = socialProvider
         )
-        return memberRepository.save(member).toResponse()
+        return memberRepository.save(member).toIdResponseDto()
     }
 
     fun getNaverAuthorizeURl(type: String): String {

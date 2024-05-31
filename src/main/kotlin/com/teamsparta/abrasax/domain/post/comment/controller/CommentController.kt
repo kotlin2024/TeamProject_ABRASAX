@@ -1,11 +1,14 @@
 package com.teamsparta.abrasax.domain.post.comment.controller
 
+import com.teamsparta.abrasax.common.dto.IdResponseDto
 import com.teamsparta.abrasax.domain.post.comment.dto.AddCommentRequestDto
 import com.teamsparta.abrasax.domain.post.comment.dto.CommentResponseDto
 import com.teamsparta.abrasax.domain.post.comment.dto.UpdateCommentRequestDto
 import com.teamsparta.abrasax.domain.post.comment.service.CommentService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.security.core.userdetails.User
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -16,33 +19,36 @@ class CommentController(
 
     @PostMapping
     fun addComment(
+        @AuthenticationPrincipal user: User,
         @PathVariable postId: Long,
         @RequestBody requestDto: AddCommentRequestDto
-    ): ResponseEntity<CommentResponseDto> {
+    ): ResponseEntity<IdResponseDto> {
 
         return ResponseEntity
             .status(HttpStatus.OK)
-            .body(commentService.addComment(postId, requestDto))
+            .body(commentService.addComment(user, postId, requestDto))
     }
 
     @PutMapping("/{commentId}")
     fun updateComment(
+        @AuthenticationPrincipal user: User,
         @PathVariable postId: Long,
         @PathVariable commentId: Long,
         @RequestBody updateCommentRequestDto: UpdateCommentRequestDto
-    ): ResponseEntity<CommentResponseDto> {
+    ): ResponseEntity<IdResponseDto> {
         return ResponseEntity.status(HttpStatus.OK)
-            .body(commentService.updateComment(postId, commentId, updateCommentRequestDto))
+            .body(commentService.updateComment(user, postId, commentId, updateCommentRequestDto))
     }
 
     @DeleteMapping("/{commentId}")
     fun deleteComment(
+        @AuthenticationPrincipal user: User,
         @PathVariable postId: Long,
         @PathVariable commentId: Long
     ): ResponseEntity<Unit> {
         return ResponseEntity
             .status(HttpStatus.NO_CONTENT)
-            .body(commentService.deleteComment(postId, commentId))
+            .body(commentService.deleteComment(user, postId, commentId))
     }
 
     @GetMapping

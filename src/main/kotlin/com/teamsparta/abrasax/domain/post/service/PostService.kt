@@ -1,8 +1,10 @@
 package com.teamsparta.abrasax.domain.post.service
 
+import com.teamsparta.abrasax.common.dto.IdResponseDto
 import com.teamsparta.abrasax.domain.exception.DeleteNotAllowedException
 import com.teamsparta.abrasax.domain.exception.MemberNotFoundException
 import com.teamsparta.abrasax.domain.exception.ModelNotFoundException
+import com.teamsparta.abrasax.domain.exception.UnauthorizedAccessException
 import com.teamsparta.abrasax.domain.member.repository.MemberRepository
 import com.teamsparta.abrasax.domain.post.comment.model.toCommentResponseDto
 import com.teamsparta.abrasax.domain.post.comment.repository.CommentRepository
@@ -10,14 +12,12 @@ import com.teamsparta.abrasax.domain.post.dto.CreatePostRequestDto
 import com.teamsparta.abrasax.domain.post.dto.PostResponseDto
 import com.teamsparta.abrasax.domain.post.dto.PostResponseWithCommentDto
 import com.teamsparta.abrasax.domain.post.dto.UpdatePostRequestDto
-import com.teamsparta.abrasax.domain.post.model.Post
-import com.teamsparta.abrasax.domain.post.model.SortDirection
-import com.teamsparta.abrasax.domain.post.model.toPostResponseDto
-import com.teamsparta.abrasax.domain.post.model.toPostWithCommentDtoResponse
+import com.teamsparta.abrasax.domain.post.model.*
 import com.teamsparta.abrasax.domain.post.repository.PostRepository
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.security.core.userdetails.User
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -58,13 +58,13 @@ class PostService(
 
 
         val posts = if (sortDirection == SortDirection.DESC) {
-            postRepository.findByStringifiedTagsContainingAndCreatedAtBeforeAndDeletedAtIsNull(
+            postRepository.findByStringifiedTagsContainingIgnoreCaseAndCreatedAtBeforeAndDeletedAtIsNull(
                 tag,
                 cursor,
                 pageable
             )
         } else {
-            postRepository.findByStringifiedTagsContainingAndCreatedAtAfterAndDeletedAtIsNull(
+            postRepository.findByStringifiedTagsContainingIgnoreCaseAndCreatedAtAfterAndDeletedAtIsNull(
                 tag,
                 cursor,
                 pageable
@@ -83,37 +83,48 @@ class PostService(
     }
 
     @Transactional
-    fun createPost(request: CreatePostRequestDto): PostResponseDto {
-        val (title, content, tags, authorId) = request
-        val member = memberRepository.findByIdOrNull(authorId)
-            ?: throw MemberNotFoundException(authorId)
-
+    fun createPost(user: User, request: CreatePostRequestDto): IdResponseDto {
+        val (title, content, tags) = request
+        val userEmail = user.username
+        val member = memberRepository.findByEmail(userEmail)
+            ?: throw MemberNotFoundException(userEmail)
 
         val post = Post.of(
             title = title,
             content = content,
             tags = tags,
             member = member,
+        )
 
-            )
-
-        return postRepository.save(post).toPostResponseDto()
+        return postRepository.save(post).toIdResponse()
     }
 
     @Transactional
-    fun updatePost(id: Long, request: UpdatePostRequestDto): PostResponseDto {
+    fun updatePost(user: User, id: Long, request: UpdatePostRequestDto): IdResponseDto {
         val (title, content, tags) = request
         val post = postRepository.findByIdOrNull(id) ?: throw ModelNotFoundException("Post", id)
+        val userEmail = user.username
 
+        if (userEmail != post.member.email) throw UnauthorizedAccessException(
+            email = userEmail,
+            modelName = "Post",
+            id = id
+        )
         post.update(title, content, tags)
-        return post.toPostResponseDto()
+        return post.toIdResponse()
     }
 
     @Transactional
-    fun deletePost(id: Long) {
+    fun deletePost(user: User, id: Long) {
+        val userEmail = user.username
         val post =
             postRepository.findPostByIdAndDeletedAtIsNull(id).orElseThrow { DeleteNotAllowedException("post", id) }
 
+        if (userEmail != post.member.email) throw UnauthorizedAccessException(
+            email = userEmail,
+            modelName = "Post",
+            id = id
+        )
         post.delete()
         postRepository.save(post)
     }

@@ -1,3 +1,3 @@
 package com.teamsparta.abrasax.domain.exception
 
-data class MemberNotFoundException(val id: Long) : RuntimeException("Member with id: $id not found")
+data class MemberNotFoundException(val email: String) : RuntimeException("Member with email: $email not found")

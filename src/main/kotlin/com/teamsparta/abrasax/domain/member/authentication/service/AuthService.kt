@@ -1,19 +1,18 @@
 package com.teamsparta.abrasax.domain.member.authentication.service
 
+import com.teamsparta.abrasax.common.dto.IdResponseDto
 import com.teamsparta.abrasax.common.security.JwtTokenProvider
-import com.teamsparta.abrasax.domain.exception.MemberNotFoundException
-import com.teamsparta.abrasax.domain.exception.PasswordNotMatchException
+import com.teamsparta.abrasax.domain.exception.*
 import com.teamsparta.abrasax.domain.member.authentication.dto.LoginRequest
 import com.teamsparta.abrasax.domain.member.authentication.dto.LoginResponse
 import com.teamsparta.abrasax.domain.member.authentication.dto.SignUpRequest
 import com.teamsparta.abrasax.domain.member.authentication.dto.UpdatePasswordRequest
-import com.teamsparta.abrasax.domain.member.dto.MemberResponse
 import com.teamsparta.abrasax.domain.member.model.Member
-import com.teamsparta.abrasax.domain.member.model.toResponse
+import com.teamsparta.abrasax.domain.member.model.toIdResponseDto
 import com.teamsparta.abrasax.domain.member.repository.MemberRepository
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.userdetails.User
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -40,10 +39,10 @@ class AuthService(
     }
 
     @Transactional
-    fun signUp(request: SignUpRequest): MemberResponse { //회원가입할때 사용자를 등록하는 함수
+    fun signUp(request: SignUpRequest): IdResponseDto { //회원가입할때 사용자를 등록하는 함수
         val (email, password, nickname) = request
         validatePassword(password)
-        if (memberRepository.existsByEmail(email)) throw IllegalArgumentException("Email already exists")
+        if (memberRepository.existsByEmail(email)) throw EmailDuplicateException(email)
 
         val member = Member.of(
             email = email,
@@ -51,24 +50,28 @@ class AuthService(
             nickname = nickname,
             socialProvider = null,
         ) // membersecurity dto에서 입력받은 email이랑 암호화된 비밀번호를 해당 변수에 저장
-        return memberRepository.save(member).toResponse()
+        return memberRepository.save(member).toIdResponseDto()
         //데이터베이스에 암호화된 비밀번호랑 이메일을 저장함
     }
 
     @Transactional
-    fun updatePassword(id: Long, request: UpdatePasswordRequest): MemberResponse {//??
+    fun updatePassword(user: User, id: Long, request: UpdatePasswordRequest): IdResponseDto {//??
+        val userEmail = user.username
+
         val member =
-            memberRepository.findByIdOrNull(id) ?: throw MemberNotFoundException(id)
+            memberRepository.findByEmail(userEmail) ?: throw MemberNotFoundException(userEmail)
+
+        if (member.socialProvider != null) throw SocialLoginPasswordChangeException()
         val (currentPassword, newPassword) = request
 
         if (!passwordEncoder.matches(currentPassword, member.password)) throw PasswordNotMatchException()
 
         if (currentPassword == newPassword) {
-            throw IllegalArgumentException("새로운 비밀번호와 현재 비밀번호가 동일함")
+            throw DomainInvariantException("새로운 비밀번호와 현재 비밀번호가 동일함")
         }
         validatePassword(newPassword)
         member.updatePassword(passwordEncoder.encode(newPassword))
-        return member.toResponse()
+        return member.toIdResponseDto()
     }
 
     private fun validatePassword(password: String) {
@@ -78,10 +81,10 @@ class AuthService(
                 password
             )
         ) {
-            throw IllegalArgumentException("Invalid password format. ${password}")
+            throw DomainInvariantException("Invalid password format. ${password}")
         }
         if (password.length < 8 || password.length > 20) {
-            throw IllegalArgumentException("Password must be more than 8 characters and less than 20 characters. ${password}")
+            throw DomainInvariantException("Password must be more than 8 characters and less than 20 characters. ${password}")
         }
 
         // ^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$ 이전 비밀번호 규칙

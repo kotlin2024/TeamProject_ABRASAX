@@ -1,13 +1,15 @@
 package com.teamsparta.abrasax.domain.member.authentication.controller
 
+import com.teamsparta.abrasax.common.dto.IdResponseDto
 import com.teamsparta.abrasax.domain.member.authentication.dto.LoginRequest
 import com.teamsparta.abrasax.domain.member.authentication.dto.LoginResponse
 import com.teamsparta.abrasax.domain.member.authentication.dto.SignUpRequest
 import com.teamsparta.abrasax.domain.member.authentication.dto.UpdatePasswordRequest
 import com.teamsparta.abrasax.domain.member.authentication.service.AuthService
-import com.teamsparta.abrasax.domain.member.dto.MemberResponse
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.security.core.userdetails.User
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -32,10 +34,12 @@ class AuthenticationController(
 
     @PutMapping("/{memberId}/password")
     fun updatePassword(
+        @AuthenticationPrincipal user: User,
         @PathVariable memberId: Long,
         @RequestBody updatePasswordRequest: UpdatePasswordRequest
-    ): ResponseEntity<MemberResponse> {
-        return ResponseEntity.status(HttpStatus.OK).body(authService.updatePassword(memberId, updatePasswordRequest))
+    ): ResponseEntity<IdResponseDto> {
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(authService.updatePassword(user, memberId, updatePasswordRequest))
     }
 
 }

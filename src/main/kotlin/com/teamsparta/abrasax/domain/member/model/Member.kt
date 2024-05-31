@@ -1,7 +1,8 @@
 package com.teamsparta.abrasax.domain.member.model
 
+import com.teamsparta.abrasax.common.dto.IdResponseDto
+import com.teamsparta.abrasax.domain.exception.DomainInvariantException
 import com.teamsparta.abrasax.domain.helper.ListStringifyHelper
-import com.teamsparta.abrasax.domain.member.dto.MemberResponse
 import jakarta.persistence.*
 import java.time.LocalDateTime
 import java.util.regex.Pattern
@@ -38,7 +39,7 @@ class Member(
     var id: Long? = null
 
     fun updateProfile(newSocialAccounts: List<String>, newNickname: String) {
-        validateNickname(nickname)
+        validateNickname(newNickname)
         validateSocialAccounts(newSocialAccounts)
         nickname = newNickname
         stringifiedSocialAccounts = ListStringifyHelper.stringifyList(newSocialAccounts)
@@ -51,26 +52,26 @@ class Member(
 
 
     companion object {
-        private fun validateNickname(nickname: String) {
-            if (nickname.length > 10) {
-                throw IllegalArgumentException("Nickname must be less than 10 characters.")
+        private fun validateNickname(newNickname: String) {
+            if (newNickname.length > 10) {
+                throw DomainInvariantException("Nickname must be less than 10 characters. $newNickname")
             }
-            if (!Pattern.matches("^[a-zA-Z0-9가-힣]*$", nickname)) { //특수문자 확인
-                throw IllegalArgumentException("Invalid nickname format.")
-            }
-        }
-
-        private fun validateEmail(email: String) {
-
-            if (!Pattern.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$", email)) {
-                throw IllegalArgumentException("Invalid email format.")
+            if (!Pattern.matches("^[a-zA-Z0-9가-힣]*$", newNickname)) { //특수문자 확인
+                throw DomainInvariantException("Invalid nickname format. $newNickname")
             }
         }
 
+        private fun validateEmail(newEmail: String) {
 
-        private fun validateSocialAccounts(socialAccounts: List<String>) {
-            if (!socialAccounts.all { it.startsWith("http://") } || !socialAccounts.all { it.startsWith("https://") }) {
-                throw IllegalArgumentException("Social account URLs must start with http:// or https://")
+            if (!Pattern.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$", newEmail)) {
+                throw DomainInvariantException("Invalid email format. $newEmail")
+            }
+        }
+
+
+        private fun validateSocialAccounts(newSocialAccounts: List<String>) {
+            if (!newSocialAccounts.any { it.startsWith("http://") || it.startsWith("https://") }) {
+                throw DomainInvariantException("Social account URLs must start with http:// or https://")
             }
 
         }
@@ -95,8 +96,8 @@ class Member(
     }
 }
 
-fun Member.toResponse(): MemberResponse {
-    return MemberResponse(
+fun Member.toIdResponseDto(): IdResponseDto {
+    return IdResponseDto(
         id = id!!,
     )
 }
