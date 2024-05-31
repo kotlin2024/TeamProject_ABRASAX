@@ -75,8 +75,9 @@ class PostService(
 
     fun getPostById(id: Long): PostResponseWithCommentDto {
 
-        val post = postRepository.findByIdOrNull(id) ?: throw ModelNotFoundException("Post", id)
-        val comments = commentRepository.findAllByPostId(id).map { it.toCommentResponseDto() }
+        val post =
+            postRepository.findPostByIdAndDeletedAtIsNull(id).orElseThrow() { ModelNotFoundException("Post", id) }
+        val comments = commentRepository.findAllByPostIdAndDeletedAtIsNull(id).map { it.toCommentResponseDto() }
 
         return post.toPostWithCommentDtoResponse(comments)
     }

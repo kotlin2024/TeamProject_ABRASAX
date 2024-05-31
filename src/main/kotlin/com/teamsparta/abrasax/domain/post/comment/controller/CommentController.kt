@@ -37,11 +37,12 @@ class CommentController(
 
     @DeleteMapping("/{commentId}")
     fun deleteComment(
+        @PathVariable postId: Long,
         @PathVariable commentId: Long
     ): ResponseEntity<Unit> {
         return ResponseEntity
             .status(HttpStatus.NO_CONTENT)
-            .body(commentService.deleteComment(commentId))
+            .body(commentService.deleteComment(postId, commentId))
     }
 
     @GetMapping

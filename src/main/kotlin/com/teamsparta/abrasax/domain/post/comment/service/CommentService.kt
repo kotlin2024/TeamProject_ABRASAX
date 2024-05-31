@@ -1,6 +1,7 @@
 package com.teamsparta.abrasax.domain.post.comment.service
 
 
+import com.teamsparta.abrasax.domain.exception.CommentMismatchException
 import com.teamsparta.abrasax.domain.exception.MemberNotFoundException
 import com.teamsparta.abrasax.domain.exception.ModelNotFoundException
 import com.teamsparta.abrasax.domain.member.repository.MemberRepository
@@ -23,14 +24,15 @@ class CommentService(
 ) {
     @Transactional
     fun addComment(postId: Long, request: AddCommentRequestDto): CommentResponseDto {
-        val post = postRepository.findByIdOrNull(postId) ?: throw ModelNotFoundException("Post", postId)
+        val post =
+            postRepository.findPostByIdAndDeletedAtIsNull(postId).orElseThrow { ModelNotFoundException("Post", postId) }
         val (content, authorId) = request
         val member = memberRepository.findByIdOrNull(authorId) ?: throw MemberNotFoundException(authorId)
 
-        val comment = Comment(
+        val comment = Comment.of(
             content = content,
             member = member,
-            post = post
+            post = post,
         )
         return commentRepository.save(comment).toCommentResponseDto()
     }
@@ -38,22 +40,28 @@ class CommentService(
     @Transactional
     fun updateComment(postId: Long, commentId: Long, requestDto: UpdateCommentRequestDto): CommentResponseDto {
 
-        if (postRepository.existsById(postId) == false) throw ModelNotFoundException("Post", postId)
-        val comment = commentRepository.findByIdOrNull(commentId) ?: throw IllegalArgumentException("Comment")
+        if (postRepository.existsByIdAndDeletedAtIsNull(postId) == false)
+            throw ModelNotFoundException("Post", postId)
+        val comment = commentRepository.findByIdAndDeletedAtIsNull(commentId) ?: throw ModelNotFoundException(
+            "Comment",
+            commentId
+        )
 
         comment.update(requestDto.content)
         return comment.toCommentResponseDto()
     }
 
     @Transactional
-    fun deleteComment(commentId: Long) {
-        val comment = commentRepository.findByIdOrNull(commentId) ?: throw ModelNotFoundException("Comment", commentId)
-        commentRepository.delete(comment)
+    fun deleteComment(postId: Long, commentId: Long) {
+        val post = postRepository.findByIdOrNull(postId) ?: throw ModelNotFoundException("Post", postId)
+        if (post.id != postId) throw CommentMismatchException(postId, commentId)
+        val comment = commentRepository.findByIdAndDeletedAtIsNull(commentId)
+            ?: throw ModelNotFoundException("Comment", commentId)
+        comment.delete()
     }
 
     fun getCommentList(postId: Long): List<CommentResponseDto> {
-
-        return commentRepository.findAllByPostId(postId).map { it.toCommentResponseDto() }
+        return commentRepository.findAllByPostIdAndDeletedAtIsNull(postId).map { it.toCommentResponseDto() }
     }
 
 }

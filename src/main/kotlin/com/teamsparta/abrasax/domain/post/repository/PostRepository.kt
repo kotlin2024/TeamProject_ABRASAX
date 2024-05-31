@@ -30,5 +30,5 @@ interface PostRepository : JpaRepository<Post, Long> {
     @Query("SELECT MIN(p.createdAt) FROM Post p WHERE p.deletedAt IS NULL")
     fun findOldestCreatedAt(): LocalDateTime?
 
+    fun existsByIdAndDeletedAtIsNull(id: Long): Boolean
 }
-

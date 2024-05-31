@@ -38,6 +38,4 @@ class GlobalExceptionHandler {
     fun handlerAuthenticationException(ex: AuthenticationException): ResponseEntity<ErrorResponse> {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorResponse(message = ex.message))
     }
-
-
 }
