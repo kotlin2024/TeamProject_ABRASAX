@@ -10,5 +10,4 @@ class ListStringifyHelper {
             return if (stringified == "") listOf() else stringified.split(",")
         }
     }
-
 }

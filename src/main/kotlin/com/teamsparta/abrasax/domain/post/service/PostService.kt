@@ -3,7 +3,6 @@ package com.teamsparta.abrasax.domain.post.service
 import com.teamsparta.abrasax.domain.exception.DeleteNotAllowedException
 import com.teamsparta.abrasax.domain.exception.MemberNotFoundException
 import com.teamsparta.abrasax.domain.exception.ModelNotFoundException
-import com.teamsparta.abrasax.domain.helper.ListStringifyHelper
 import com.teamsparta.abrasax.domain.member.repository.MemberRepository
 import com.teamsparta.abrasax.domain.post.comment.model.toCommentResponseDto
 import com.teamsparta.abrasax.domain.post.comment.repository.CommentRepository
@@ -18,7 +17,7 @@ import com.teamsparta.abrasax.domain.post.repository.PostRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.LocalDateTime
+
 
 @Service
 class PostService(
@@ -43,16 +42,14 @@ class PostService(
         val (title, content, tags, authorId) = request
         val member = memberRepository.findByIdOrNull(authorId)
             ?: throw MemberNotFoundException(authorId)
-        val createdAt = LocalDateTime.now()
 
-        val post =
-            Post(
+
+        val post = Post.of(
                 title = title,
                 content = content,
-                stringifiedTags = ListStringifyHelper.stringifyList(tags),
+                tags = tags,
                 member = member,
-                createdAt = createdAt,
-                updatedAt = createdAt,
+
             )
 
         return postRepository.save(post).toPostResponseDto()

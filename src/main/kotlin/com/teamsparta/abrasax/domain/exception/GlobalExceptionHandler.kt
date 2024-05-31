@@ -1,6 +1,7 @@
 package com.teamsparta.abrasax.domain.exception.dto
 
 import com.teamsparta.abrasax.domain.exception.DeleteNotAllowedException
+import com.teamsparta.abrasax.domain.exception.ModelInvariantException
 import com.teamsparta.abrasax.domain.exception.ModelNotFoundException
 import com.teamsparta.abrasax.domain.exception.PasswordNotMatchException
 import org.springframework.http.HttpStatus
@@ -26,6 +27,11 @@ class GlobalExceptionHandler {
     @ExceptionHandler(DeleteNotAllowedException::class)
     fun handleDeleteNotAllowedException(ex: DeleteNotAllowedException): ResponseEntity<ErrorResponse> {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ErrorResponse(message = ex.message))
+    }
+
+    @ExceptionHandler(ModelInvariantException::class)
+    fun handleModelInvariantException(ex: ModelInvariantException): ResponseEntity<String> {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.message)
     }
 
     @ExceptionHandler(AuthenticationException::class)
