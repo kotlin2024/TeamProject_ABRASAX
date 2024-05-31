@@ -3,22 +3,32 @@ package com.teamsparta.abrasax.domain.member.model
 import com.teamsparta.abrasax.domain.helper.ListStringifyHelper
 import com.teamsparta.abrasax.domain.member.dto.MemberResponse
 import jakarta.persistence.*
+import java.time.LocalDateTime
 import java.util.regex.Pattern
 
 @Entity
 @Table(name = "member")
 class Member(
-    @Column(name = "nickname")
+    @Column(name = "nickname", nullable = false)
     var nickname: String,
 
-    @Column(name = "password")
+    @Column(name = "password", nullable = false)
     var password: String,
 
-    @Column(name = "email")
+    @Column(name = "email", nullable = false, unique = true)
     var email: String,
 
-    @Column(name = "social_accounts")
-    var stringifiedSocialAccounts: String
+    @Column(name = "social_accounts", nullable = false)
+    var stringifiedSocialAccounts: String,
+
+    @Column(name = "created_at", nullable = false)
+    val createdAt: LocalDateTime,
+
+    @Column(name = "updated_at", nullable = false)
+    var updatedAt: LocalDateTime,
+
+    @Column(name = "deleted_at")
+    var deletedAt: LocalDateTime?,
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,8 +39,7 @@ class Member(
         validateSocialAccounts(newSocialAccounts)
         nickname = newNickname
         stringifiedSocialAccounts = ListStringifyHelper.stringifyList(newSocialAccounts)
-
-
+        updatedAt = LocalDateTime.now()
     }
 
     fun updatePassword(newPassword: String) {
@@ -68,12 +77,15 @@ class Member(
             validateNickname(nickname)
             validateEmail(email)
 
-
+            val timestamp = LocalDateTime.now()
             return Member(
                 email = email,
                 nickname = nickname,
                 password = password,
-                stringifiedSocialAccounts = ""
+                stringifiedSocialAccounts = "",
+                createdAt = timestamp,
+                updatedAt = timestamp,
+                deletedAt = null,
             )
         }
     }
