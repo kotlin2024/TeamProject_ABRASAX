@@ -1,3 +1,9 @@
 jwt:
   secret: "ABCDEFG"
   validity: 3600000
+
+naver-oauth:
+  baseUrl: "https://nid.naver.com/oauth2.0"
+  clientId: "21wQorE33Jhmmz_rfoa2"
+  clientSecret: "5umpzfGvNS"
+  redirectUri: "http://localhost:8080/oauth2/naver/success"
